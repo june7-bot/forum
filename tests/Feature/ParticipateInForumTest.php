@@ -10,14 +10,15 @@ class ParticipateInForumTest extends TestCase
 {
     use RefreshDatabase;
 
+
     function test_Unauthenticated_user_may_not_add_replies()
     {
         $this->withoutExceptionHandling();
-
         $this->expectException('Illuminate\Auth\AuthenticationException');
 
-        $thread = factory('App\Thread')->create();
-        $reply = factory('App\Reply')->create();
+        $thread = create('App\Thread');
+
+        $reply = create('App\Reply');
 
         $this->post($thread->path() . '/replies', $reply->toArray());
     }
@@ -30,7 +31,6 @@ class ParticipateInForumTest extends TestCase
         $this->be(factory('App\User')->create());
 
         $thread = factory('App\Thread')->create();
-
         $reply = factory('App\Reply')->make();
         $this->post($thread->path() . '/replies' , $reply->toArray());
 
@@ -47,6 +47,51 @@ class ParticipateInForumTest extends TestCase
         $reply = factory('App\Reply')->make(['body' => null]);
 
         $this->post($thread->path() . '/replies', $reply->toArray())->assertSessionHasErrors('body');
+
+    }
+
+    function test_un_authorized_user_cannot_delete_reply()
+    {
+        $reply = create('App\Reply');
+
+        $this->delete("replies/" . $reply->id)
+        ->assertRedirect('/login');
+
+        $this->signIn()
+            ->delete("replies/" . $reply->id)
+            ->assertStatus(403);
+    }
+
+    function test_authorized_user_can_delete_reply()
+    {
+        $this->signIn();
+        $reply = create('App\Reply' , [ 'user_id' => auth()->id()]);
+
+        $this->delete("replies/" . $reply->id);
+
+        $this->assertDatabaseMissing('replies', ['id' => $reply->id]);
+    }
+
+    function test_authorized_user_can_update_replies()
+    {
+        $this->signIn();
+        $reply = create('App\Reply', ['user_id' => auth()->id()]);
+
+        $this->patch('/replies/' . $reply->id, ['body' => 'have changed']);
+
+        $this->assertDatabaseHas('replies', ['id' => $reply->id, 'body' => 'have changed']);
+    }
+
+    function test_un_authorized_user_cannot_update_reply()
+    {
+        $reply = create('App\Reply');
+
+        $this->patch("replies/" . $reply->id)
+            ->assertRedirect('/login');
+
+        $this->signIn()
+            ->patch("/replies/{$reply->id}")
+            ->assertStatus(403);
 
     }
 }

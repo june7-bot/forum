@@ -6,12 +6,27 @@ use Illuminate\Database\Eloquent\Model;
 
 class Reply extends Model
 {
+    use Favoritable , RecordsActivity;
+
     protected $guarded = [];
+
+    protected $appends =['favoritesCount' , 'isFavorited'];
+
+    protected $with = ['owner', 'favorites'];
 
 
     public function owner()
     {
-        //관례 안따르기에 user_id 입력해줘야함!
         return $this->belongsTo(User::class , 'user_id');
+    }
+
+    public function thread()
+    {
+        return $this->belongsTo(Thread::class);
+    }
+
+    public function path()
+    {
+        return $this->thread->path() . "#reply-{$this->id}";
     }
 }

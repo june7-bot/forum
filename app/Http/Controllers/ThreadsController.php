@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Activity;
 use App\Channel;
+use App\Filters\ThreadFilters;
 use App\Thread;
 use App\User;
 use Illuminate\Http\Request;
@@ -12,29 +14,22 @@ class ThreadsController extends Controller
 
     public function __construct()
     {
-        $this->middleware('auth')->except(['index' , 'show']);
+        $this->middleware('auth')->except(['index', 'show']);
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Http\Response|\Illuminate\View\View
-     */
-    public function index(Channel $channel)
+
+    public function index(Channel $channel, ThreadFilters $filters)
     {
+        $threads = Thread::latest();
+
         if ($channel->exists) {
-            $threads = $channel->threads()->latest();
-        }else{
-            $threads = Thread::latest();
+            $threads->where('channel_id', $channel->id);
         }
+        $threads = $threads->filter($filters)->get();
 
-        if( $username = \request('by')){
-            $user = User::where('name', $username)->firstOrFail();
-
-            $threads->where('user_id', $user->id);
+        if (\request()->wantsJson()) {
+            return $threads;
         }
-
-        $threads = $threads->get();
 
         return view('threads.index', compact('threads'));
     }
@@ -49,45 +44,43 @@ class ThreadsController extends Controller
         return view('threads.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $this->validate($request, [
             'title' => 'required',
             'body' => 'required',
-            'channel_id' =>'required|exists:channels,id'
+            'channel_id' => 'required|exists:channels,id'
         ]);
 
-        $thread =  Thread::create([
+        $thread = Thread::create([
             'title' => $request->title,
             'body' => $request->body,
             'channel_id' => request('channel_id'),
             'user_id' => auth()->id(),
-       ]);
+        ]);
 
-        return redirect($thread->path());
+        return redirect($thread->path())->with('flash', 'Your thread have been published');
+
     }
 
     /**
      * Display the specified resource.
      *
      * @param Thread $thread
-     * @return Thread
+     * @return Thread|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function show($channelId ,Thread $thread)
+    public function show($channelId, Thread $thread)
     {
-        return view('threads.show', compact('thread'));
+        return view('threads.show', [
+            'thread' => $thread,
+            'replies' => $thread->replies()->paginate(20),
+        ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
@@ -98,8 +91,8 @@ class ThreadsController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
@@ -107,14 +100,20 @@ class ThreadsController extends Controller
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
+    public function destroy($channelId, Thread $thread)
     {
-        //
+        $this->authorize('update', $thread);
+
+        if ( $thread->user_id != auth()->id()) {
+          abort(403, 'You do not have permission to do this');
+        }
+
+        $thread->delete();
+
+        if (\request()->wantsJson()) return response([], 204);
+
+        return redirect('/threads');
+
     }
+
 }
