@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Reply;
+use App\Thread;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
@@ -54,5 +55,43 @@ class ThreadTest extends TestCase
         $thread = create('App\Thread');
 
         $this->assertInstanceOf('App\Channel' , $thread->channel );
+    }
+
+    function test_thread_can_be_subscribed()
+    {
+        $thread =  create('App\Thread');
+
+        $this->signIn();
+
+        $thread->subscribe($userId = 1);
+
+        self::assertEquals(1, $thread->subscriptions()->where('user_id', $userId)->count());
+
+    }
+
+    function test_thread_can_be_unsubscribed_from()
+    {
+        $thread =  create('App\Thread');
+
+        $thread->subscribe($userId = 1);
+
+        $thread->unsubscribe($userId);
+
+
+        self::assertEquals(0, $thread->subscriptions->count());
+
+    }
+
+    function test_it_knows_if_authenticated_user_is_subscribed_to_it()
+    {
+        $thread = create('App\Thread');
+
+        $this->signIn();
+
+        $this->assertFalse($thread->isSubscribedTo);
+
+        $thread->subscribe();
+
+        $this->assertTrue($thread->isSubscribedTo);
     }
 }

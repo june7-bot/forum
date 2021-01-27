@@ -26,17 +26,17 @@ class ParticipateInForumTest extends TestCase
     public function test_authenticated_user_may_participate_forum_threads()
     {
 
-        $this->withoutExceptionHandling();
+        $this->signIn();
 
-        $this->be(factory('App\User')->create());
+        $thread = create('App\Thread');
+        $reply = make('App\Reply');
 
-        $thread = factory('App\Thread')->create();
-        $reply = factory('App\Reply')->make();
-        $this->post($thread->path() . '/replies' , $reply->toArray());
+        $this->post($thread->path() . '/replies' , $reply->toArray() );
 
-        $this->get($thread->path())
-                ->assertSee($reply->body);
+        $this->assertDatabaseHas('replies', ['body' => $reply->body]);
+        $this->assertEquals(1, $thread->fresh()->replies_count);
     }
+
 
     function test_reply_requires_a_body()
     {
@@ -70,6 +70,9 @@ class ParticipateInForumTest extends TestCase
         $this->delete("replies/" . $reply->id);
 
         $this->assertDatabaseMissing('replies', ['id' => $reply->id]);
+
+        $this->assertEquals(0 , $reply->thread->fresh()->replies_count);
+
     }
 
     function test_authorized_user_can_update_replies()

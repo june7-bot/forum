@@ -1,48 +1,52 @@
 <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
     <div class="container">
-        <a class="navbar-brand" href="/threads">
-            {{ config('app.name', 'Forum') }}
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <div  style="display: flex;">
+            <a class="navbar-brand" href="/threads">
+                {{ config('app.name', 'Forum') }}
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <!-- Left Side Of Navbar -->
-            <ul class="nav navbar-nav mr-auto">
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <!-- Left Side Of Navbar -->
+                <ul class="nav navbar-nav mr-auto">
 
-                <li class="dropdown">
-                    <a class="dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Browse
-                    </a>
-                    <ul class="dropdown-menu " aria-labelledby="navbarDarkDropdownMenuLink">
-                        <li><a href="/threads">All Threads</a></li>
-                        @auth
-                            <li><a href="/threads?by={{ auth()->user()->name }}">My Threads</a></li>
-                        @endauth
-                        <li><a href="/threads?popular=1">Popular Threads </a></li>
-                    </ul>
-                </li>
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Browse
+                        </a>
+                        <ul class="dropdown-menu " aria-labelledby="navbarDarkDropdownMenuLink">
+                            <li><a href="/threads">All Threads</a></li>
+                            @auth
+                                <li><a href="/threads?by={{ auth()->user()->name }}">My Threads</a></li>
+                            @endauth
+                            <li><a href="/threads?popular=1">Popular Threads </a></li>
+                            <li><a href="/threads?unanswered=1">Unanswered Threads </a></li>
+                        </ul>
+                    </li>
 
 
-                <li style="margin-right: 10px">
-                    <a href="/threads/create">New Thread</a>
-                </li>
+                    <li style="margin-right: 10px">
+                        <a href="/threads/create">New Thread</a>
+                    </li>
 
-                <li class="dropdown">
-                    <a class="dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Channels
-                    </a>
-                    <ul class="dropdown-menu " aria-labelledby="navbarDarkDropdownMenuLink">
-                        @foreach($channels as $channel)
-                            <li><a href="/threads/{{ $channel->slug }}">{{ $channel->name }}</a></li>
-                        @endforeach
-                    </ul>
-                </li>
-            </ul>
-
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Channels
+                        </a>
+                        <ul class="dropdown-menu " aria-labelledby="navbarDarkDropdownMenuLink">
+                            @foreach($channels as $channel)
+                                <li><a href="/threads/{{ $channel->slug }}">{{ $channel->name }}</a></li>
+                            @endforeach
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+            <div>
             <!-- Right Side Of Navbar -->
-            <ul class="navbar-nav ml-auto">
+            <ul class="navbar-nav ml-auto" style="display: flex; align-items: center">
                 <!-- Authentication Links -->
                 @guest
                     <li class="nav-item">
@@ -54,6 +58,8 @@
                         </li>
                     @endif
                 @else
+
+                        <user-notifications></user-notifications>
 
                     <li class="nav-item dropdown">
 
@@ -78,6 +84,6 @@
                     </li>
                 @endguest
             </ul>
-        </div>
+            </div>
     </div>
 </nav>

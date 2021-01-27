@@ -14,7 +14,11 @@ Vue.prototype.authorize = function (handler) {
 
     return user ? handler(user) : false;
 };
+
+
 /**
+ *
+ *
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
  * components and automatically register them with their "basename".
@@ -26,6 +30,8 @@ Vue.prototype.authorize = function (handler) {
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 
 Vue.component('flash', require('./components/flash.vue').default);
+Vue.component('paginator', require('./components/Paginator.vue').default);
+Vue.component('user-notifications', require('./components/UserNotifications.vue').default);
 Vue.component('thread-view', require('./pages/Thread.vue').default);
 
 /**
