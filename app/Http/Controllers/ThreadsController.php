@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Activity;
 use App\Channel;
 use App\Filters\ThreadFilters;
+use App\Inspections\Spam;
+use App\Rules\SpamFree;
 use App\Thread;
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class ThreadsController extends Controller
 {
@@ -30,7 +33,6 @@ class ThreadsController extends Controller
         if (\request()->wantsJson()) {
             return $threads;
         }
-
         return view('threads.index', compact('threads'));
     }
 
@@ -47,8 +49,8 @@ class ThreadsController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'title' => 'required',
-            'body' => 'required',
+            'title' => ['required', new SpamFree],
+            'body' =>  ['required', new SpamFree],
             'channel_id' => 'required|exists:channels,id'
         ]);
 
@@ -71,6 +73,9 @@ class ThreadsController extends Controller
      */
     public function show($channelId, Thread $thread)
     {
+        if (auth()->check()) {
+          auth()->user()->read($thread);
+        }
 
         return view('threads.show', compact('thread'));
 
@@ -103,8 +108,8 @@ class ThreadsController extends Controller
     {
         $this->authorize('update', $thread);
 
-        if ( $thread->user_id != auth()->id()) {
-          abort(403, 'You do not have permission to do this');
+        if ($thread->user_id != auth()->id()) {
+            abort(403, 'You do not have permission to do this');
         }
 
         $thread->delete();
@@ -112,7 +117,7 @@ class ThreadsController extends Controller
         if (\request()->wantsJson()) return response([], 204);
 
         return redirect('/threads');
-
     }
+
 
 }

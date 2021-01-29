@@ -15,21 +15,21 @@
         <div class="card-body">
 
             <div v-if="editing">
-                <div class="form-group mb-3">
-                    <textarea class="form-control" v-model="body"> </textarea>
-                </div>
-                <button class="btn btn-sm btn-primary" @click="update">Update</button>
-                <button class="btn btn-sm btn-link" @click="editing = false">Cancel</button>
+                <form @submit="update">
+                    <div class="form-group mb-3">
+                        <textarea class="form-control" v-model="body" required> </textarea>
+                    </div>
+                    <button class="btn btn-sm btn-primary">Update</button>
+                    <button class="btn btn-sm btn-link" @click="editing = false" type="button">Cancel</button>
+                </form>
             </div>
 
             <div v-else v-text="body"> </div>
 
-<!--            @can('update' , $reply)-->
             <div class="card-footer" style="display:flex; justify-content: flex-end" v-if="canUpdate">
                 <button class="btn btn-close-white btn-sm text-white" @click="editing = true"> Edit</button>
                 <button class="btn btn-close-white btn-sm text-white btn-danger" @click="destroy"> Delete</button>
             </div>
-<!--            @endcan-->
         </div>
     </div>
 </template>
@@ -66,7 +66,10 @@
             update(){
                 axios.patch('/replies/' + this.data.id,{
                     body: this.body
-                });
+                }).catch(error => {
+                    flash(error.response.data, 'danger');
+                })
+
                 this.editing = false;
 
                 flash('Updated');

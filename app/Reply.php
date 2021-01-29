@@ -3,14 +3,15 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class Reply extends Model
 {
-    use Favoritable , RecordsActivity;
+    use Favoritable, RecordsActivity;
 
     protected $guarded = [];
 
-    protected $appends =['favoritesCount' , 'isFavorited'];
+    protected $appends = ['favoritesCount', 'isFavorited'];
 
     protected $with = ['owner', 'favorites'];
 
@@ -31,7 +32,7 @@ class Reply extends Model
 
     public function owner()
     {
-        return $this->belongsTo(User::class , 'user_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function thread()
@@ -39,8 +40,26 @@ class Reply extends Model
         return $this->belongsTo(Thread::class);
     }
 
+    public function wasJustPublished()
+    {
+        return $this->created_at->gt(Carbon::now()->subMinute());
+    }
+
+    public function mentionedUser()
+    {
+        preg_match_all('/@([\w\-]+)/', $this->body, $matches);
+
+        return $matches[1];
+
+    }
+
     public function path()
     {
         return $this->thread->path() . "#reply-{$this->id}";
+    }
+
+    public function setBodyAttribute($body)
+    {
+       $this->attributes['body'] =  preg_replace('/@([\w\-]+)/', '<a href="/profiles/$1">$0</a>', $body);
     }
 }

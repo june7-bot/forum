@@ -2,9 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreatePostRequest;
+use App\Inspections\Spam;
+use App\Notifications\YouWereMentioned;
 use App\Reply;
+use App\Rules\SpamFree;
 use App\Thread;
+use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class RepliesController extends Controller
 {
@@ -18,29 +24,23 @@ class RepliesController extends Controller
         return $thread->replies()->paginate(20);
     }
 
-    public function store($channelId , Thread $thread)
+    public function store($channelId, Thread $thread , CreatePostRequest $form)
     {
 
-        $this->validate(\request() , [
-            'body' => 'required',
-        ]);
-
-        $reply = $thread->addReply([
+       return $thread->addReply([
             'body' => \request('body'),
             'user_id' => auth()->id(),
-        ]);
-        if(\request()->expectsJson()) return $reply->load('owner');
-
-        return back()->with('flash', 'your reply has been left');
+        ])->load('owner');
     }
 
     public function update(Reply $reply)
     {
         $this->authorize('update', $reply);
 
-        $reply->update([
-            'body' => \request('body'),
-        ]);
+        $this->validate(\request(), ['body' => ['required', new SpamFree],]);
+
+        $reply->update(['body' => \request('body')]);
+
     }
 
     public function destroy(Reply $reply)
@@ -49,9 +49,11 @@ class RepliesController extends Controller
 
         $reply->delete();
 
-        if( \request()->expectsJson()) {
+        if (\request()->expectsJson()) {
             return response(['status' => 'Reply deleted']);
         }
         return back();
     }
+
+
 }

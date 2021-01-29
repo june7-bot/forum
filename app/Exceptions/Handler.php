@@ -3,6 +3,8 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -50,6 +52,19 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $exception)
     {
+
+        if($exception instanceof \Illuminate\Validation\ValidationException) {
+            if($request->expectsJson()) {
+                return response('Sorry, validation failed', 422);
+            }
+        }
+
+        if($exception instanceof ThrottleRequestsException) {
+            if($request->expectsJson()) {
+                return response('You are posting too frequently. Please take a break. :)', 429);
+            }
+        }
+
         return parent::render($request, $exception);
     }
 }

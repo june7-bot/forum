@@ -35,7 +35,6 @@ class ReadThreadTest extends TestCase
     function test_user_can_filter_threads_according_to_a_tag()
     {
 
-        $this->withoutExceptionHandling();
 
         $channel = factory('App\Channel')->create();
 
@@ -47,6 +46,7 @@ class ReadThreadTest extends TestCase
             ->assertSee($threadInChannel->title)
             ->assertDontSee($threadNotInChannel->title);
     }
+
 
     function test_user_can_filter_thread_by_username()
     {
