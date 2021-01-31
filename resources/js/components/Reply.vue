@@ -24,7 +24,7 @@
                 </form>
             </div>
 
-            <div v-else v-text="body"> </div>
+            <div v-else v-html="body"> </div>
 
             <div class="card-footer" style="display:flex; justify-content: flex-end" v-if="canUpdate">
                 <button class="btn btn-close-white btn-sm text-white" @click="editing = true"> Edit</button>

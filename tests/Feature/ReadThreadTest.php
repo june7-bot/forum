@@ -75,20 +75,20 @@ class ReadThreadTest extends TestCase
 
         $response = $this->getJson('threads?popular=1')->json();
 
-        $this->assertEquals([3, 2, 0], array_column($response, 'replies_count'));
+        $this->assertEquals([3, 2, 0], array_column($response['data'], 'replies_count'));
     }
 
-    function test_user_can_filter_thread_that_are_notanswered()
+    function test_user_can_filter_thread_that_are_not_answered()
     {
         $thread = create('App\Thread');
+
         create('App\Reply', ['thread_id' => $thread->id]);
 
         $res = $this->getJson('threads?unanswered=1')->json();
-
-        $this->assertCount(1, $res);
+        $this->assertCount(1, $res['data']);
     }
 
-    function test_user_can_request_all_replies_for_a_given_thread()
+function test_user_can_request_all_replies_for_a_given_thread()
     {
 
         $thread = create('App\Thread');

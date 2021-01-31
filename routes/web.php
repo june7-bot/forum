@@ -38,11 +38,11 @@ Route::post('/threads/{channel}/{thread}/replies', 'RepliesController@store');
 Route::delete('/replies/{reply}', 'RepliesController@destroy');
 Route::patch('/replies/{reply}', 'RepliesController@update');
 
-
-
 Route::get('/profiles/{user}', 'ProfilesController@show')->name('profile');
 Route::get('/profiles/{user}/notifications', 'UserNotificationsController@index');
 Route::delete('/profiles/{user}/notifications/{notification}', 'UserNotificationsController@destroy');
 Route::view('test', 'flex');
 
+Route::get('/api/users', 'Api\UsersController@index');
+Route::post('/api/users/{user}/avatar', 'Api\UserAvatarController@store')->middleware('auth');
 
