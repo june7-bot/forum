@@ -28,6 +28,7 @@
         "babel-preset-es2015": "^6.24.1",
         "bootstrap": "^5.0.0-beta1",
         "font-awesome": "^4.7.0",
-        "moment": "^2.29.1"
+        "moment": "^2.29.1",
+        "tributejs": "^5.1.3"
     }
 }

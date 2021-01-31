@@ -28,7 +28,7 @@ class ThreadsController extends Controller
         if ($channel->exists) {
             $threads->where('channel_id', $channel->id);
         }
-        $threads = $threads->filter($filters)->get();
+        $threads = $threads->filter($filters)->paginate(5);
 
         if (\request()->wantsJson()) {
             return $threads;
